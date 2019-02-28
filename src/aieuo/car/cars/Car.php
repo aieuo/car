@@ -12,6 +12,8 @@ class Car extends Vehicle
 {
 	const NETWORK_ID = 84;
 
+	protected $gravity = 0.1;
+
 	public $height = 0.7;
 	public $width = 0.98;
 
