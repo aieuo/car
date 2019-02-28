@@ -6,6 +6,7 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
+use pocketmine\event\player\PlayerJumpEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
@@ -44,6 +45,14 @@ class Main extends PluginBase implements Listener {
 			}
 			$this->cars[$player->getName()] = $entity;
 			$entity->onRide($player);
+		}
+	}
+
+	public function onJump(PlayerJumpEvent $event) {
+		$player = $event->getPlayer();
+		if(isset($this->cars[$player->getName()])) {
+			$this->cars[$player->getName()]->onLeave();
+			unset($this->cars[$player->getName()]);
 		}
 	}
 }
