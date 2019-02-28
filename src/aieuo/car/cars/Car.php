@@ -8,8 +8,7 @@ use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Vehicle;
 
-class Car extends Vehicle
-{
+class Car extends Vehicle {
 	const NETWORK_ID = 84;
 
 	protected $gravity = 0.1;
@@ -52,18 +51,16 @@ class Car extends Vehicle
 				(cos($this->player->yaw / 180 * M_PI) * cos($this->player->pitch / 180 * M_PI) * $this->getSpeed() * $diff)
 			);
 			$this->setMotion($motion);
-		}
-		elseif($this->hasMovementUpdate())
-		{
-			$this->motion->x *= 0.85;
-			$this->motion->z *= 0.85;
-			$this->speed *= 0.85;
+			$this->y ++;
+		} elseif($this->hasMovementUpdate()) {
+			$this->speed *= 0.999;
+			$this->motion->x *= 0.999;
+			$this->motion->z *= 0.999;
 		}
 		return parent::entityBaseTick($diff);
 	}
 
-	public function getSpeed()
-	{
+	public function getSpeed() {
 		$this->speed += $this->accel;
 		if($this->speed > $this->max_speed) $this->speed = $this->max_speed;
 		return $this->speed;
