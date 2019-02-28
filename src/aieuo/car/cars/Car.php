@@ -31,17 +31,14 @@ class Car extends Vehicle {
 		$this->player = $rider;
 	}
 
-	public function entityBaseTick(int $diff = 1) : bool
-	{
-		if($this->player instanceof Player)
-		{
-			if(!$this->player->isOnline() or !$this->player->isAlive())
-			{
-				$this->player = null;
-				$this->motionX = 0;
-				$this->motionY = 0;
-				$this->motionZ = 0;
-				$this->speed = 0;
+	public function entityBaseTick(int $diff = 1) : bool {
+		if($this->player instanceof Player) {
+			if(!$this->player->isOnline() or !$this->player->isAlive()) {
+				$this->onLeave();
+				return false;
+			}
+			if(abs($this->x - $this->player->x) > 3 or abs($this->z - $this->player->z) > 3) {
+				$this->onLeave();
 				return false;
 			}
 			$this->yaw = $this->player->yaw + 90;
