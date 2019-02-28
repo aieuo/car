@@ -7,6 +7,10 @@ use pocketmine\entity\Entity;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Vehicle;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
+use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
+use pocketmine\network\mcpe\protocol\types\EntityLink;
+use pocketmine\event\entity\EntityDamageEvent;
 
 class Car extends Vehicle {
 	const NETWORK_ID = 84;
@@ -26,9 +30,14 @@ class Car extends Vehicle {
 		$this->player = null;
 	}
 
-	public function onRiderMount(Entity $rider) : void
-	{
+	public function onRide($rider) {
 		$this->player = $rider;
+
+		$rider->getDataPropertyManager()->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, 1, 0));
+
+		$pk = new SetEntityLinkPacket();
+		$pk->link = new EntityLink($this->id, $rider->getId(), EntityLink::TYPE_RIDER);
+		$rider->getServer()->broadcastPacket($rider->level->getPlayers(), $pk, true);
 	}
 
 	public function entityBaseTick(int $diff = 1) : bool {
