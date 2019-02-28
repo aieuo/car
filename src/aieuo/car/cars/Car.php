@@ -21,8 +21,7 @@ class Car extends Vehicle
 	private $max_speed = 0.4;
 	private $accel = 0.002;
 
-	public function onRiderLeave(Entity $rider) : void
-	{
+	public function onLeave() {
 		$this->player = null;
 	}
 
