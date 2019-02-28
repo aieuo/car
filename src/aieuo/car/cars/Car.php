@@ -69,10 +69,5 @@ class Car extends Vehicle
 		return $this->speed;
 	}
 
-	public function getDrops() : array
-	{
-		return [
-			Item::get(Item::MINECART)
-		];
 	}
 }
