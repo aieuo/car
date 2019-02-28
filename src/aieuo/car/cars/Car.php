@@ -69,5 +69,10 @@ class Car extends Vehicle
 		return $this->speed;
 	}
 
+	public function attack(EntityDamageEvent $source) : void{
+		parent::attack($source);
+
+		if($source->isCancelled()) return;
+		$this->kill();
 	}
 }
