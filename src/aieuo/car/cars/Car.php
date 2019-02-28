@@ -18,8 +18,8 @@ class Car extends Vehicle
 	private $player = null;
 
 	private $speed = 0;
-	private $max_speed = 0.4;
-	private $accel = 0.002;
+	private $max_speed = 0.5;
+	private $accel = 0.004;
 
 	public function onLeave() {
 		$this->player = null;
