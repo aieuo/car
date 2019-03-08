@@ -6,6 +6,7 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
+use pocketmine\utils\Config;
 use pocketmine\event\player\PlayerJumpEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
@@ -19,14 +20,29 @@ class Main extends PluginBase implements Listener {
 
 	public function onEnable() {
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
+        $this->config = new Config($this->getDataFolder()."config.yml", Config::YAML, [
+        	"maxspeed" => 0.5,
+        	"accel" => 0.004,
+        	"brake" => true,
+        	"段差を超える" => true
+        ]);
+        $this->config->save();
 		Entity::registerEntity(Car::class, false, ["Car"]);
 	}
 
 	public function onTouch(PlayerInteractEvent $event) {
 		if($event->getItem()->getId() == Item::MINECART) {
-			$nbt = Entity::createBaseNBT($event->getBlock()->getSide($event->getFace()));
+			$level = $event->getPlayer()->getLevel();
+			$pos = $event->getBlock()->getSide($event->getFace())->asVector3();
+			if(!$level->isChunkLoaded($pos->x, $pos->y)) $level->loadChunk($pos->x, $pos->y);
+
+			$nbt = Entity::createBaseNBT($pos);
 			$entity = Entity::createEntity("Car", $event->getPlayer()->level, $nbt);
 			$entity->spawnToAll();
+			$entity->setMaxSpeed((float)$this->config->get("maxspeed"));
+			$entity->setAccel((float)$this->config->get("accel"));
+			$entity->brake = (boolean)$this->config->get("brake");
+			$entity->jump = (boolean)$this->config->get("段差を超える");
 		}
 	}
 
