@@ -7,9 +7,12 @@ use pocketmine\event\Listener;
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
 use pocketmine\utils\Config;
-use pocketmine\event\player\PlayerJumpEvent;
+use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\entity\EntityLevelChangeEvent;
+use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 
 use aieuo\car\cars\Car;
@@ -48,6 +51,7 @@ class Main extends PluginBase implements Listener {
 
 	public function onRecive(DataPacketReceiveEvent $event) {
 		$pk = $event->getPacket();
+		var_dump($pk->getName());
 		if($pk instanceof InventoryTransactionPacket) {
 			if($pk->transactionType !== InventoryTransactionPacket::TYPE_USE_ITEM_ON_ENTITY) return;
 			if($pk->trData->actionType !== InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT) return;
@@ -61,14 +65,33 @@ class Main extends PluginBase implements Listener {
 			}
 			$this->cars[$player->getName()] = $entity;
 			$entity->onRide($player);
+		} elseif($pk instanceof InteractPacket) {
+			if($pk->action == InteractPacket::ACTION_LEAVE_VEHICLE) {
+				$player = $event->getPlayer();
+				$this->checkLeaveCar($player);
+			}
 		}
 	}
 
-	public function onJump(PlayerJumpEvent $event) {
-		$player = $event->getPlayer();
+	public function checkLeaveCar($player) {
 		if(isset($this->cars[$player->getName()])) {
 			$this->cars[$player->getName()]->onLeave();
 			unset($this->cars[$player->getName()]);
 		}
+	}
+
+	public function onDeath(PlayerDeathEvent $event) {
+		$player = $event->getPlayer();
+		$this->checkLeaveCar($player);
+	}
+
+	public function onTeleport(EntityTeleportEvent $event) {
+		$player = $event->getEntity();
+		if($player instanceof Player) $this->checkLeaveCar($player);
+	}
+
+	public function onLevelChange(EntityLevelChangeEvent $event) {
+		$player = $event->getEntity();
+		if($player instanceof Player) $this->checkLeaveCar($player);
 	}
 }

@@ -59,11 +59,11 @@ class Car extends Vehicle {
 
 	public function entityBaseTick(int $diff = 1) : bool {
 		if($this->player instanceof Player) {
-			if(!$this->player->isOnline() or !$this->player->isAlive()) {
+			if(!$this->player->isOnline()) {
 				$this->onLeave();
 				return false;
 			}
-			if(abs($this->x - $this->player->x) > 15 or abs($this->z - $this->player->z) > 15) {
+			if(abs($this->x - $this->player->x) > 50 or abs($this->z - $this->player->z) > 50) {
 				$this->onLeave();
 				return false;
 			}
@@ -75,10 +75,7 @@ class Car extends Vehicle {
 			);
 			$this->setMotion($motion);
 			if($this->jump) {
-				$jump = $this->jump();
-		        if(!$jump and !$this->isOnGround()){
-		            $this->motion->y -= $this->gravity;
-		        }
+				$this->jump();
 		    }
 		} elseif($this->hasMovementUpdate()) {
 			$this->speed *= 0.999;
