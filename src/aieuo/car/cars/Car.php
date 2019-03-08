@@ -12,6 +12,13 @@ use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
 use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\event\entity\EntityDamageEvent;
 
+use pocketmine\block\Block;
+use pocketmine\block\Slab;
+use pocketmine\block\Stair;
+use pocketmine\block\SignPost;
+use pocketmine\block\Fence;
+use pocketmine\block\FenceGate;
+
 class Car extends Vehicle {
 	const NETWORK_ID = 84;
 
@@ -19,12 +26,22 @@ class Car extends Vehicle {
 
 	public $height = 0.7;
 	public $width = 0.98;
+	public $brake = true;
+	public $jump = true;
 
 	private $player = null;
 
 	private $speed = 0;
 	private $max_speed = 0.5;
 	private $accel = 0.004;
+
+	public function setMaxSpeed(float $speed) {
+		$this->max_speed = $speed;
+	}
+
+	public function setAccel(float $accel) {
+		$this->accel = $accel;
+	}
 
 	public function onLeave() {
 		$this->player = null;
@@ -46,24 +63,63 @@ class Car extends Vehicle {
 				$this->onLeave();
 				return false;
 			}
-			if(abs($this->x - $this->player->x) > 3 or abs($this->z - $this->player->z) > 3) {
+			if(abs($this->x - $this->player->x) > 15 or abs($this->z - $this->player->z) > 15) {
 				$this->onLeave();
 				return false;
 			}
 			$this->yaw = $this->player->yaw + 90;
 			$motion = new Vector3(
-				(-sin($this->player->yaw / 180 * M_PI) * cos($this->player->pitch / 180 * M_PI) * $this->getSpeed() * $diff),
+				(-sin($this->player->yaw / 180 * M_PI) * ($this->brake ? cos($this->player->pitch / 180 * M_PI) : 1) * $this->getSpeed() * $diff),
 				0,
-				(cos($this->player->yaw / 180 * M_PI) * cos($this->player->pitch / 180 * M_PI) * $this->getSpeed() * $diff)
+				(cos($this->player->yaw / 180 * M_PI) * ($this->brake ? cos($this->player->pitch / 180 * M_PI) : 1) * $this->getSpeed() * $diff)
 			);
 			$this->setMotion($motion);
-			$this->y ++;
+			if($this->jump) {
+				$jump = $this->jump();
+		        if(!$jump and !$this->isOnGround()){
+		            $this->motion->y -= $this->gravity;
+		        }
+		    }
 		} elseif($this->hasMovementUpdate()) {
 			$this->speed *= 0.999;
 			$this->motion->x *= 0.999;
 			$this->motion->z *= 0.999;
 		}
 		return parent::entityBaseTick($diff);
+	}
+
+	public function jump() {
+		if(!($this->player instanceof Player) or !$this->player->isOnline()) return false;
+		switch ($this->player->getDirection()) {
+			case 0:
+				$pos = $this->add(1);
+				break;
+			case 1:
+				$pos = $this->add(0, 0, 1);
+				break;
+			case 2:
+				$pos = $this->add(-1);
+				break;
+			case 3:
+				$pos = $this->add(0, 0, -1);
+				break;
+		}
+		if($this->level->getBlock($pos->add(0, 1))->getId() !== 0) return false;
+		$block = $this->level->getBlock($pos);
+		if($block->getId() === 0) return false;
+		if(
+			$block instanceof SignPost
+			or $block instanceof Fence
+			or $block instanceof FenceGate
+		) {
+			return false;
+		}
+        if($block instanceof Slab or $block instanceof Stair) {
+            $this->motion->y = 0.2;
+        }else{
+            $this->motion->y = 0.4;
+        }
+		return true;
 	}
 
 	public function getSpeed() {
