@@ -51,7 +51,6 @@ class Main extends PluginBase implements Listener {
 
 	public function onRecive(DataPacketReceiveEvent $event) {
 		$pk = $event->getPacket();
-		var_dump($pk->getName());
 		if($pk instanceof InventoryTransactionPacket) {
 			if($pk->transactionType !== InventoryTransactionPacket::TYPE_USE_ITEM_ON_ENTITY) return;
 			if($pk->trData->actionType !== InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT) return;
