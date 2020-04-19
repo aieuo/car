@@ -1,0 +1,6 @@
+---
+maxspeed: 0.500000
+accel: 0.004000
+brake: true
+段差を超える: true
+...

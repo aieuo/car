@@ -2,6 +2,7 @@
 
 namespace aieuo\car;
 
+use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
 use pocketmine\entity\Entity;
@@ -15,6 +16,8 @@ use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 
+use aieuo\car\cars\Vehivle;
+use aieuo\car\cars\Dolphin;
 use aieuo\car\cars\Car;
 
 class Main extends PluginBase implements Listener {
@@ -30,24 +33,31 @@ class Main extends PluginBase implements Listener {
         	"段差を超える" => true
         ]);
         $this->config->save();
-		Entity::registerEntity(Car::class, false, ["Car"]);
+		Entity::registerEntity(Car::class, true, ["Car"]);
+		Entity::registerEntity(Dolphin::class, true, ["DolphinCar"]);
 	}
 
 	public function onTouch(PlayerInteractEvent $event) {
-		if($event->getItem()->getId() == Item::MINECART) {
-			$level = $event->getPlayer()->getLevel();
-			$pos = $event->getBlock()->getSide($event->getFace())->asVector3();
-			if(!$level->isChunkLoaded($pos->x, $pos->y)) $level->loadChunk($pos->x, $pos->y);
+		$item = $event->getItem();
+		if($item->getId() == Item::MINECART) {
+			$pos = $event->getBlock()->getSide($event->getFace());
+			$this->spawnCar($pos, "Car");
+		} elseif($item->getId() == Item::SPAWN_EGG and $item->getDamage() == Entity::DOLPHIN) {
+			$pos = $event->getBlock()->getSide($event->getFace());
+			$this->spawnCar($pos, "DolphinCar");
+		}
+	}
 
+	public function spawnCar($pos, $entityname) {
+		if(!$pos->level->isChunkLoaded($pos->x, $pos->y)) $pos->level->loadChunk($pos->x, $pos->y);
 			$nbt = Entity::createBaseNBT($pos);
-			$entity = Entity::createEntity("Car", $event->getPlayer()->level, $nbt);
+		$entity = Entity::createEntity($entityname, $pos->level, $nbt);
 			$entity->spawnToAll();
 			$entity->setMaxSpeed((float)$this->config->get("maxspeed"));
 			$entity->setAccel((float)$this->config->get("accel"));
 			$entity->brake = (boolean)$this->config->get("brake");
 			$entity->jump = (boolean)$this->config->get("段差を超える");
 		}
-	}
 
 	public function onRecive(DataPacketReceiveEvent $event) {
 		$pk = $event->getPacket();
@@ -57,7 +67,7 @@ class Main extends PluginBase implements Listener {
 
 			$player = $event->getPlayer();
 			$entity = $player->level->getEntity($pk->trData->entityRuntimeId);
-			if(!($entity instanceof Car)) return;
+			if(!($entity instanceof Car) and !($entity instanceof Dolphin)) return;
 
 			if(isset($this->cars[$player->getName()])) {
 				$this->cars[$player->getName()]->onLeave();
