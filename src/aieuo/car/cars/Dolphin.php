@@ -21,31 +21,6 @@ class Dolphin extends Vehicle {
     public $height = 0.7;
     public $width = 1.6;
 
-    public function onUpdate(int $currentTick): bool {
-        parent::onUpdate($currentTick);
-        if($this->player instanceof Player) {
-            if(!$this->player->isOnline()) {
-                $this->onLeave();
-                return false;
-            }
-            if(abs($this->x - $this->player->x) > 50 or abs($this->z - $this->player->z) > 50) {
-                $this->onLeave();
-                return false;
-            }
-            $this->motion->x = (-sin($this->player->yaw / 180 * M_PI) * ($this->brake ? cos($this->player->pitch / 180 * M_PI) : 1) * $this->getSpeed());
-            $this->motion->z = (cos($this->player->yaw / 180 * M_PI) * ($this->brake ? cos($this->player->pitch / 180 * M_PI) : 1) * $this->getSpeed());
-            $this->setRotation($this->player->yaw, 0);
-            $jump = false;
-            if($this->jump) $jump = $this->jump();
-            if(!$jump) $this->motion->y -= 0.03999999910593033;
-        } elseif($this->hasMovementUpdate()) {
-            $this->speed *= 0.999;
-            $this->motion->x *= 0.999;
-            $this->motion->z *= 0.999;
-        }
-        return !$this->onGround or abs($this->motion->x) > 0.00001 or abs($this->motion->y) > 0.00001 or abs($this->motion->z) > 0.00001;
-    }
-
     public function jump() {
         if(!($this->player instanceof Player) or !$this->player->isOnline()) return false;
         switch ($this->player->getDirection()) {
