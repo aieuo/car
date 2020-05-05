@@ -2,6 +2,7 @@
 
 namespace aieuo\car;
 
+use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
@@ -16,23 +17,24 @@ use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 
-use aieuo\car\cars\Vehivle;
 use aieuo\car\cars\Dolphin;
 use aieuo\car\cars\Car;
 
 class Main extends PluginBase implements Listener {
 
 	private $cars = [];
+    /* @var Config */
+    private $setting;
 
-	public function onEnable() {
+    public function onEnable() {
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->config = new Config($this->getDataFolder()."config.yml", Config::YAML, [
+        $this->setting = new Config($this->getDataFolder()."config.yml", Config::YAML, [
         	"maxspeed" => 0.5,
         	"accel" => 0.004,
         	"brake" => true,
         	"段差を超える" => true
         ]);
-        $this->config->save();
+        $this->setting->save();
 		Entity::registerEntity(Car::class, true, ["Car"]);
 		Entity::registerEntity(Dolphin::class, true, ["DolphinCar"]);
 	}
@@ -48,18 +50,18 @@ class Main extends PluginBase implements Listener {
 		}
 	}
 
-	public function spawnCar($pos, $entityname) {
-		if(!$pos->level->isChunkLoaded($pos->x, $pos->y)) $pos->level->loadChunk($pos->x, $pos->y);
+	public function spawnCar(Position $pos, string $entityName) {
+		if(!$pos->level->isChunkLoaded($pos->x >> 4, $pos->y >> 4)) $pos->level->loadChunk($pos->x >> 4, $pos->y >> 4);
 			$nbt = Entity::createBaseNBT($pos);
-		$entity = Entity::createEntity($entityname, $pos->level, $nbt);
+		    $entity = Entity::createEntity($entityName, $pos->level, $nbt);
 			$entity->spawnToAll();
-			$entity->setMaxSpeed((float)$this->config->get("maxspeed"));
-			$entity->setAccel((float)$this->config->get("accel"));
-			$entity->brake = (boolean)$this->config->get("brake");
-			$entity->jump = (boolean)$this->config->get("段差を超える");
+			$entity->setMaxSpeed((float)$this->setting->get("maxspeed"));
+			$entity->setAccel((float)$this->setting->get("accel"));
+			$entity->brake = (boolean)$this->setting->get("brake");
+			$entity->jump = (boolean)$this->setting->get("段差を超える");
 		}
 
-	public function onRecive(DataPacketReceiveEvent $event) {
+	public function onReceive(DataPacketReceiveEvent $event) {
 		$pk = $event->getPacket();
 		if($pk instanceof InventoryTransactionPacket) {
 			if($pk->transactionType !== InventoryTransactionPacket::TYPE_USE_ITEM_ON_ENTITY) return;
@@ -82,7 +84,7 @@ class Main extends PluginBase implements Listener {
 		}
 	}
 
-	public function checkLeaveCar($player) {
+	public function checkLeaveCar(Player $player) {
 		if(isset($this->cars[$player->getName()])) {
 			$this->cars[$player->getName()]->onLeave();
 			unset($this->cars[$player->getName()]);
