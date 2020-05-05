@@ -22,6 +22,8 @@ class Vehicle extends PMVehicle {
 
     protected $player = null;
 
+    protected $rotationAdd = 0;
+
     public function setMaxSpeed(float $speed) {
         $this->max_speed = $speed;
     }
@@ -59,7 +61,7 @@ class Vehicle extends PMVehicle {
             }
             $this->motion->x = (-sin($this->player->yaw / 180 * M_PI) * ($this->brake ? cos($this->player->pitch / 180 * M_PI) : 1) * $this->getSpeed());
             $this->motion->z = (cos($this->player->yaw / 180 * M_PI) * ($this->brake ? cos($this->player->pitch / 180 * M_PI) : 1) * $this->getSpeed());
-            $this->setRotation($this->player->yaw + 90, 0);
+            $this->setRotation($this->player->yaw + $this->rotationAdd, 0);
             $jump = false;
             if($this->jump) $jump = $this->jump();
             if(!$jump) $this->motion->y -= 0.03999999910593033;

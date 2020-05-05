@@ -19,6 +19,8 @@ class Car extends Vehicle {
 	public $height = 0.8;
 	public $width = 0.98;
 
+	protected $rotationAdd = 90;
+
 	public function jump() {
 		if(!($this->player instanceof Player) or !$this->player->isOnline()) return false;
 		switch ($this->player->getDirection()) {
