@@ -2,8 +2,8 @@
 
 namespace aieuo\car\cars;
 
+use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
 use pocketmine\Player;
-use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
 use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\math\Vector3;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -36,13 +36,13 @@ class Vehicle extends PMVehicle {
         $this->player = null;
     }
 
-    public function onRide($rider) {
+    public function onRide(Player $rider) {
         if($this->player instanceof Player and $this->player->isOnline()) return false;
         $this->player = $rider;
 
         $rider->getDataPropertyManager()->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, 1, 0));
 
-        $pk = new SetEntityLinkPacket();
+        $pk = new SetActorLinkPacket();
         $pk->link = new EntityLink($this->getId(), $rider->getId(), EntityLink::TYPE_PASSENGER);
         $rider->getServer()->broadcastPacket($rider->getServer()->getOnlinePlayers(), $pk);
         return true;
