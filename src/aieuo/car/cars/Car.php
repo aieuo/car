@@ -57,9 +57,8 @@ class Car extends Vehicle {
 	}
 
 	public function getDrops() : array{
-		$drops = [
-			Item::get(Item::MINECART, 0, 1)
-		];
-		return $drops;
+        return [
+            Item::get(Item::MINECART, 0, 1)
+        ];
 	}
 }

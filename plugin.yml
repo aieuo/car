@@ -1,7 +1,7 @@
 ---
 name: car
 main: aieuo\car\Main
-version: 2.4.1
+version: 2.4.2
 api: 3.0.0
 load: POSTWORLD
 author: aieuo
