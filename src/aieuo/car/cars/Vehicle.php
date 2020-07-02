@@ -43,7 +43,7 @@ class Vehicle extends PMVehicle {
         $rider->getDataPropertyManager()->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, 1, 0));
 
         $pk = new SetActorLinkPacket();
-        $pk->link = new EntityLink($this->getId(), $rider->getId(), EntityLink::TYPE_PASSENGER);
+        $pk->link = new EntityLink($this->getId(), $rider->getId(), EntityLink::TYPE_PASSENGER, false, true);
         $rider->getServer()->broadcastPacket($rider->getServer()->getOnlinePlayers(), $pk);
         return true;
     }
