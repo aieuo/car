@@ -3,6 +3,7 @@
 namespace aieuo\car;
 
 use pocketmine\level\Position;
+use pocketmine\network\mcpe\protocol\types\GameMode;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
@@ -41,12 +42,19 @@ class Main extends PluginBase implements Listener {
 
 	public function onTouch(PlayerInteractEvent $event) {
 		$item = $event->getItem();
+		$player = $event->getPlayer();
 		if($item->getId() == Item::MINECART) {
 			$pos = $event->getBlock()->getSide($event->getFace());
 			$this->spawnCar($pos, "Car");
+
+			$item->pop();
+			if ($player->getGamemode() === GameMode::SURVIVAL) $player->getInventory()->setItemInHand($item);
 		} elseif($item->getId() == Item::SPAWN_EGG and $item->getDamage() == Entity::DOLPHIN) {
 			$pos = $event->getBlock()->getSide($event->getFace());
 			$this->spawnCar($pos, "DolphinCar");
+
+            $item->pop();
+            if ($player->getGamemode() === GameMode::SURVIVAL) $player->getInventory()->setItemInHand($item);
 		}
 	}
 
